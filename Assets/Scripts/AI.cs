@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /*****************************************************************************************************************************
@@ -94,6 +95,8 @@ public class AI : MonoBehaviour
     private AgentActions _agentActions;
 
 
+    private Node _topNode;
+
     // Use this for initialization
     void Start ()
     {
@@ -103,12 +106,20 @@ public class AI : MonoBehaviour
         _agentSenses = GetComponentInChildren<Sensing>();
         _agentInventory = GetComponentInChildren<InventoryController>();
 
+        InitialiseBehaviourTree();
     }
 
     // Update is called once per frame
     void Update ()
     {
-        // Run your AI code in here
+        _topNode.Evaluate();
 
+    }
+    private void InitialiseBehaviourTree()
+    {
+        Selector mainSelector = new Selector();
+        mainSelector.AddChild(new MoveToPosition(this, _agentActions, GameObject.Find("Blue Flag"), 1f));
+
+        _topNode = mainSelector;
     }
 }
