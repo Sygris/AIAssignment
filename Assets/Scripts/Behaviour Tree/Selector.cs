@@ -7,9 +7,10 @@ public class Selector : Node
     /// </summary>
     protected List<Node> _nodes = new List<Node>();
 
-    public Selector()
-    {
-    }
+    /// <summary>
+    /// Default Constractor
+    /// </summary>
+    public Selector() { }
 
     /// <summary>
     /// Constractor that recveives a list of child nodes

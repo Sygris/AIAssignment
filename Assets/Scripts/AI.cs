@@ -115,10 +115,12 @@ public class AI : MonoBehaviour
         _topNode.Evaluate();
 
     }
+
     private void InitialiseBehaviourTree()
     {
-        Selector mainSelector = new Selector();
+        Sequence mainSelector = new Sequence();
         mainSelector.AddChild(new MoveToPosition(this, _agentActions, GameObject.Find("Blue Flag"), 1f));
+        mainSelector.AddChild(new MoveToPosition(this, _agentActions, GameObject.Find("Red Flag"), 1f));
 
         _topNode = mainSelector;
     }

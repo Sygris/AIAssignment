@@ -9,6 +9,11 @@ public class Sequence : Node
     /// Children node that bnelongs to this sequence
     /// </summary>
     protected List<Node> _nodes = new List<Node>();
+    
+    /// <summary>
+    /// Default Constractor
+    /// </summary>
+    public Sequence() { }
 
     /// <summary>
     /// Constractor that recveives a list of child nodes
@@ -24,27 +29,20 @@ public class Sequence : Node
 
     public override NodeState Evaluate()
     {
-        bool isAnyChildRunning = false;
-
         foreach (var node in _nodes)
         {
             switch (node.Evaluate())
             {
                 case NodeState.FAILURE:
-                    _nodeState = NodeState.FAILURE;
+                    SetState(NodeState.FAILURE);
                     return _nodeState;
-                case NodeState.SUCCESS:
-                    continue;
                 case NodeState.RUNNING:
-                    isAnyChildRunning = true;
-                    continue;
-                default:
-                    _nodeState = NodeState.SUCCESS;
+                    SetState(NodeState.RUNNING);
                     return _nodeState;
             }
         }
 
-        _nodeState = isAnyChildRunning ? NodeState.RUNNING : NodeState.SUCCESS;
+        SetState(NodeState.SUCCESS);
         return _nodeState;
     }
 }

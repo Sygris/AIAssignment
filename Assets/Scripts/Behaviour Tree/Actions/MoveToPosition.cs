@@ -34,7 +34,6 @@ public class MoveToPosition : Node
             SetState(NodeState.SUCCESS);
             Debug.Log("<color=green>Reached </color>" + _target.name);
         }
-        //}
 
         return _nodeState;
     }
