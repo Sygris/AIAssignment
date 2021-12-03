@@ -84,6 +84,7 @@ using UnityEngine;
 /// </summary>
 public class AI : MonoBehaviour
 {
+    #region Variables already given
     // Gives access to important data about the AI agent (see above)
     private AgentData _agentData;
     // Gives access to the agent senses
@@ -92,12 +93,15 @@ public class AI : MonoBehaviour
     private InventoryController _agentInventory;
     // This is the script containing the AI agents actions
     // e.g. agentScript.MoveTo(enemy);
-    private AgentActions _agentActions;
+    private AgentActions _agentActions; 
+    #endregion
 
-
+    // Root node of the main Tree
     private Node _topNode;
 
-    // Use this for initialization
+    // Blackboard
+    private Blackboard _blackboard;
+
     void Start ()
     {
         // Initialise the accessable script components
@@ -109,19 +113,42 @@ public class AI : MonoBehaviour
         InitialiseBehaviourTree();
     }
 
-    // Update is called once per frame
     void Update ()
     {
         _topNode.Evaluate();
-
+        UpdateBlackboard();
     }
 
     private void InitialiseBehaviourTree()
     {
+
+        #region Blackboard
+        _blackboard = new Blackboard();
+
+        _blackboard.AddData(_agentData.EnemyFlagName, GameObject.Find(_agentData.EnemyFlagName));
+        _blackboard.AddData(_agentData.FriendlyFlagName, GameObject.Find(_agentData.FriendlyFlagName));
+        _blackboard.AddData(_agentData.EnemyBase.name, GameObject.Find(_agentData.EnemyBase.name));
+        _blackboard.AddData(_agentData.FriendlyBase.name, GameObject.Find(_agentData.FriendlyBase.name));
+        _blackboard.AddData(Names.HealthKit, GameObject.Find(Names.HealthKit));
+        _blackboard.AddData(Names.PowerUp, GameObject.Find(Names.PowerUp));
+        _blackboard.AddData("HasEnemyFlag", _agentData.HasEnemyFlag);
+        _blackboard.AddData("HasFriendlyFlag", _agentData.HasFriendlyFlag);
+        //_blackboard.AddData("EnemyFlagCarrier", enemyFlagCarrier);
+
+        #endregion
+
         Sequence mainSelector = new Sequence();
-        mainSelector.AddChild(new MoveToPosition(this, _agentActions, GameObject.Find("Blue Flag"), 1f));
+        mainSelector.AddChild(new MoveToPosition(this, _agentActions, (GameObject)_blackboard.GetData(_agentData.FriendlyFlagName), 1f));
         mainSelector.AddChild(new MoveToPosition(this, _agentActions, GameObject.Find("Red Flag"), 1f));
 
         _topNode = mainSelector;
+    }
+
+    private void UpdateBlackboard()
+    {
+        _blackboard.ModifyData("HasEnemyFlag", _agentData.HasEnemyFlag);
+        _blackboard.ModifyData("HasFriendlyFlag", _agentData.HasFriendlyFlag);
+
+        //enemyFlagCarrier = (GameObject)_blackboard.GetData("EnemyFlagCarrier");
     }
 }
