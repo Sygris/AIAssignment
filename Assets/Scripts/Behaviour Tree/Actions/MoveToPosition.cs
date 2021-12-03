@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MoveToPosition : Node
@@ -11,7 +9,7 @@ public class MoveToPosition : Node
     // Tolerance to target position the agent has to reach, so the agent does not need to be exactly at the target's position
     private float _tolerance;
 
-    public MoveToPosition(AI agent, AgentActions actions, GameObject target, float tolerance)
+    public MoveToPosition(AI agent, AgentActions actions, GameObject target, float tolerance = 1.0f)
     {
         _agent = agent;
         _agentActions = actions;
@@ -27,7 +25,7 @@ public class MoveToPosition : Node
 
         if (Vector3.Distance(_agent.transform.position, _target.transform.position) > _tolerance)
         {
-            Debug.Log("Far away from my G");
+            // Add code to attack
         }
         else
         {

@@ -93,16 +93,24 @@ public class AI : MonoBehaviour
     private InventoryController _agentInventory;
     // This is the script containing the AI agents actions
     // e.g. agentScript.MoveTo(enemy);
-    private AgentActions _agentActions; 
+    private AgentActions _agentActions;
     #endregion
 
+    #region Variables addded by Tiago Antunes Boa Vista
     // Root node of the main Tree
     private Node _topNode;
 
     // Blackboard
     private Blackboard _blackboard;
 
-    void Start ()
+    private GameObject _enemyFlag;
+    private GameObject _friendlyFlag;
+    private GameObject _enemyBase;
+    private GameObject _friendlyBase;
+    private GameObject _enemyFlagCarrier;
+    #endregion
+
+    void Start()
     {
         // Initialise the accessable script components
         _agentData = GetComponent<AgentData>();
@@ -113,7 +121,7 @@ public class AI : MonoBehaviour
         InitialiseBehaviourTree();
     }
 
-    void Update ()
+    void Update()
     {
         _topNode.Evaluate();
         UpdateBlackboard();
@@ -121,7 +129,6 @@ public class AI : MonoBehaviour
 
     private void InitialiseBehaviourTree()
     {
-
         #region Blackboard
         _blackboard = new Blackboard();
 
@@ -133,15 +140,28 @@ public class AI : MonoBehaviour
         _blackboard.AddData(Names.PowerUp, GameObject.Find(Names.PowerUp));
         _blackboard.AddData("HasEnemyFlag", _agentData.HasEnemyFlag);
         _blackboard.AddData("HasFriendlyFlag", _agentData.HasFriendlyFlag);
-        //_blackboard.AddData("EnemyFlagCarrier", enemyFlagCarrier);
+        _blackboard.AddData("EnemyFlagCarrier", _enemyFlagCarrier);
 
+        _enemyFlag      = (GameObject)_blackboard.GetData(_agentData.EnemyFlagName);
+        _friendlyFlag   = (GameObject)_blackboard.GetData(_agentData.FriendlyFlagName);
+        _enemyBase      = (GameObject)_blackboard.GetData(_agentData.EnemyBase.name);
+        _friendlyBase   = (GameObject)_blackboard.GetData(_agentData.FriendlyBase.name);
         #endregion
 
-        Sequence mainSelector = new Sequence();
-        mainSelector.AddChild(new MoveToPosition(this, _agentActions, (GameObject)_blackboard.GetData(_agentData.FriendlyFlagName), 1f));
-        mainSelector.AddChild(new MoveToPosition(this, _agentActions, GameObject.Find("Red Flag"), 1f));
+        Sequence captureFlag = new Sequence();
+        Selector selector = new Selector();
+        Sequence moveToFlagSequence = new Sequence();
 
-        _topNode = mainSelector;
+
+        selector.AddChild(new ComparePositions(_enemyFlag, _enemyBase, 10f));
+
+        moveToFlagSequence.AddChild(new MoveToPosition(this, _agentActions, _enemyFlag));
+        moveToFlagSequence.AddChild(new HasItem(_agentInventory, Names.HealthKit));
+
+        captureFlag.AddChild(selector);
+        captureFlag.AddChild(moveToFlagSequence);
+
+        _topNode = captureFlag;
     }
 
     private void UpdateBlackboard()
@@ -149,6 +169,6 @@ public class AI : MonoBehaviour
         _blackboard.ModifyData("HasEnemyFlag", _agentData.HasEnemyFlag);
         _blackboard.ModifyData("HasFriendlyFlag", _agentData.HasFriendlyFlag);
 
-        //enemyFlagCarrier = (GameObject)_blackboard.GetData("EnemyFlagCarrier");
+        _enemyFlagCarrier = (GameObject)_blackboard.GetData("EnemyFlagCarrier");
     }
 }
