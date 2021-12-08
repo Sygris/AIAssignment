@@ -1,8 +1,10 @@
+using UnityEngine;
+
 public class HasItem : Node
 {
     private InventoryController _agentInventory;
 
-    private readonly string _item;
+    private string _item;
 
     public HasItem(InventoryController inventory, string itemName)
     {
@@ -14,6 +16,7 @@ public class HasItem : Node
     {
         if (_agentInventory.HasItem(_item))
         {
+            Debug.Log("Has " + _item);
             SetState(NodeState.SUCCESS);
             return _nodeState;
         }

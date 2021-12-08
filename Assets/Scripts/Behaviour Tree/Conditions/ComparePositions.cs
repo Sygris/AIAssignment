@@ -5,20 +5,22 @@ using UnityEngine;
 /// </summary>
 public class ComparePositions : Node
 {
-    private GameObject _positionA;
-    private GameObject _positionB;
+    private AI _agent;
+    private GameObject _target;
     private float _tolerance;
 
-    public ComparePositions(GameObject positionA, GameObject positionB, float tolerance = 1.0f)
+    public ComparePositions(AI agent, GameObject targetPosition = null, float tolerance = 1.0f)
     {
-        _positionA = positionA;
-        _positionB = positionB;
+        _agent = agent;
+        _target = targetPosition;
         _tolerance = tolerance;
     }
 
     public override NodeState Evaluate()
     {
-        if (Vector3.Distance(_positionA.transform.position, _positionB.transform.position) > _tolerance)
+        GameObject tmp = Util.DetermineTarget(_agent, ref _target, TargetTypes.FLAG);
+
+        if (Vector3.Distance(_agent.transform.position, tmp.transform.position) > _tolerance)
         {
             SetState(NodeState.FAILURE);
             return _nodeState;

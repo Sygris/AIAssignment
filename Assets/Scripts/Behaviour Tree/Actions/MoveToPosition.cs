@@ -5,33 +5,32 @@ public class MoveToPosition : Node
     private AI _agent;
     private AgentActions _agentActions;
     private GameObject _target;
+    private TargetTypes _targetType;
 
     // Tolerance to target position the agent has to reach, so the agent does not need to be exactly at the target's position
     private float _tolerance;
 
-    public MoveToPosition(AI agent, AgentActions actions, GameObject target, float tolerance = 1.0f)
+    public MoveToPosition(AI agent, AgentActions actions, GameObject target = null, float tolerance = 1.0f, TargetTypes targetType = TargetTypes.FLAG)
     {
         _agent = agent;
-        _agentActions = actions;
         _target = target;
+        _agentActions = actions;
         _tolerance = tolerance;
+        _targetType = targetType;
     }
 
     public override NodeState Evaluate()
     {
         SetState(NodeState.RUNNING);
 
-        _agentActions.MoveTo(_target);
+        GameObject tmp = Util.DetermineTarget(_agent, ref _target, _targetType);
+        _agentActions.MoveTo(tmp);
 
-        if (Vector3.Distance(_agent.transform.position, _target.transform.position) > _tolerance)
-        {
-            // Add code to attack
-        }
-        else
+        if (Vector3.Distance(_agent.transform.position, tmp.transform.position) <= _tolerance)
         {
             SetState(NodeState.SUCCESS);
-            Debug.Log("<color=green>Reached </color>" + _target.name);
         }
+
 
         return _nodeState;
     }
