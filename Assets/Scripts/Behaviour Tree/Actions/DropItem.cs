@@ -4,14 +4,12 @@ public class DropItem : Node
 {
     private AI _agent;
     private AgentActions _agentActions;
-    private InventoryController _agentInventory;
     private GameObject _itemToDrop;
 
-    public DropItem(AI agent, AgentActions agentActions, InventoryController agentInventory, GameObject itemToDrop = null)
+    public DropItem(AI agent, AgentActions agentActions, GameObject itemToDrop = null)
     {
         _agent = agent;
         _agentActions = agentActions;
-        _agentInventory = agentInventory;
         _itemToDrop = itemToDrop;
     }
 
@@ -19,14 +17,17 @@ public class DropItem : Node
     {
         SetState(NodeState.RUNNING);
 
-        GameObject tmp = Util.DetermineTarget(_agent, ref _itemToDrop, TargetTypes.FLAG);
+        // If no item was specified the AI will drop the flag 
+        if (_itemToDrop == null)
+        {
+            GameObject tmp = Util.DetermineTarget(_agent, _itemToDrop, TargetTypes.FLAG);
 
-        _agentActions.DropItem(tmp);
+            _agentActions.DropItem(tmp);
+            _agent.Blackboard.ModifyData("PriorityFlag", null);
+            return NodeState.SUCCESS;
+        }
 
-        _agent.PriorityFlag = null;
-
-        Debug.Log("Dropped the <color=yellow>flag</color>");
-
+        _agentActions.DropItem(_itemToDrop);
         return NodeState.SUCCESS;
     }
 }

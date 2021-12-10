@@ -81,17 +81,6 @@ public class AgentData : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// The health the agent should flee or heal
-    /// </summary>
-    private float _healthThreshold = 55;
-    public float HealthThreshold
-    {
-        get
-        {
-            return _healthThreshold;
-        }
-    }
 
     // Agent stats
     public int MaxHitPoints = 100;
@@ -107,6 +96,18 @@ public class AgentData : MonoBehaviour
 
     // Our current health, this is public in order to aid debugging
     public int CurrentHitPoints;
+
+    /// <summary>
+    /// The health the agent should flee or heal
+    /// </summary>
+    private float _healthThreshold = 100 / 2;
+    public float HealthThreshold
+    {
+        get
+        {
+            return _healthThreshold;
+        }
+    }
 
     /// <summary>
     /// Get the current scores

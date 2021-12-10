@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class Util
 {
-    public static GameObject DetermineTarget(AI agent, ref GameObject gameObject, TargetTypes targetTypes)
+    public static GameObject DetermineTarget(AI agent, GameObject gameObject, TargetTypes targetTypes)
     {
         GameObject tmp = null;
 
@@ -11,10 +11,19 @@ public static class Util
             switch (targetTypes)
             {
                 case TargetTypes.FLAG:
-                    tmp = agent.PriorityFlag;
+                    tmp = (GameObject)agent.Blackboard.GetData("PriorityFlag");
                     break;
                 case TargetTypes.ENEMY:
-                    tmp = agent.ClosestEnemy;
+                    tmp = (GameObject)agent.Blackboard.GetData("ClosestEnemy");
+                    break;
+                case TargetTypes.HEALTHKIT:
+                    tmp = (GameObject)agent.Blackboard.GetData(Names.HealthKit);
+                    break;
+                case TargetTypes.POWERUP:
+                    tmp = (GameObject)agent.Blackboard.GetData(Names.PowerUp);
+                    break;
+                case TargetTypes.ALLY:
+                    tmp = (GameObject)agent.Blackboard.GetData("AllyWithFlag");
                     break;
                 default:
                     break;
@@ -29,4 +38,4 @@ public static class Util
     }
 }
 
-public enum TargetTypes { FLAG, ENEMY }
+public enum TargetTypes { FLAG, ENEMY, HEALTHKIT, POWERUP, ALLY }

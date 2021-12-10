@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public abstract class Collectable : MonoBehaviour
 {
+    public bool isTaken = false;
+
     /// <summary>
     /// An AI agent collects an object
     /// </summary>
@@ -23,6 +25,8 @@ public abstract class Collectable : MonoBehaviour
 
         // Not visible to AI either
         gameObject.layer = 0;
+
+        ToggleIsTaken();
     }
 
     /// <summary>
@@ -39,5 +43,12 @@ public abstract class Collectable : MonoBehaviour
         gameObject.GetComponent<BoxCollider>().enabled = true;
         gameObject.GetComponent<MeshRenderer>().enabled = true;
         gameObject.layer = LayerMask.NameToLayer("VisibleToAI");
+
+        ToggleIsTaken();
+    }
+
+    protected void ToggleIsTaken()
+    {
+        isTaken = !isTaken;
     }
 }

@@ -102,27 +102,8 @@ public class AI : MonoBehaviour
 
     // Blackboard
     private Blackboard _blackboard;
-
-    private GameObject _enemyFlag;
-    private GameObject _friendlyFlag;
-    private GameObject _enemyBase;
+    public Blackboard Blackboard { get { return _blackboard; } }
     private GameObject _friendlyBase;
-    private GameObject _enemyFlagCarrier;
-
-    private GameObject _priorityFlag;
-    public GameObject PriorityFlag
-    {
-        get { return _priorityFlag; }
-        set { _priorityFlag = value; }
-    }
-
-    private GameObject _closestEnemy;
-    public GameObject ClosestEnemy
-    {
-        get { return _closestEnemy; }
-        set { _closestEnemy = value; }
-    }
-
     #endregion
 
     void Start()
@@ -153,34 +134,58 @@ public class AI : MonoBehaviour
         _blackboard.AddData(_agentData.FriendlyBase.name, GameObject.Find(_agentData.FriendlyBase.name));
         _blackboard.AddData(Names.HealthKit, GameObject.Find(Names.HealthKit));
         _blackboard.AddData(Names.PowerUp, GameObject.Find(Names.PowerUp));
-        _blackboard.AddData("HasEnemyFlag", _agentData.HasEnemyFlag);
-        _blackboard.AddData("HasFriendlyFlag", _agentData.HasFriendlyFlag);
-        _blackboard.AddData("EnemyFlagCarrier", _enemyFlagCarrier);
+        _blackboard.AddData("AllyWithFlag", null);
+        // TODO: Create an enum that stores these strings so there are no "magic strings" in the project and prevent errors
+        _blackboard.AddData("PriorityFlag", null);
+        _blackboard.AddData("ClosestEnemy", null);
 
-        _enemyFlag = (GameObject)_blackboard.GetData(_agentData.EnemyFlagName);
-        _friendlyFlag = (GameObject)_blackboard.GetData(_agentData.FriendlyFlagName);
-        _enemyBase = (GameObject)_blackboard.GetData(_agentData.EnemyBase.name);
         _friendlyBase = (GameObject)_blackboard.GetData(_agentData.FriendlyBase.name);
 
-        _priorityFlag = _enemyFlag;
         #endregion
+        Selector collectUseItemSelector = new Selector();
+        Sequence healthKitSequence = new Sequence();
+        Selector useCollectHealthKit = new Selector();
+        Sequence useHealthKit = new Sequence();
+        Sequence collectHealthKit = new Sequence();
+        Sequence collectPowerUp = new Sequence();
+
+        healthKitSequence.AddChild(new IsHealthLessThan(_agentData.HealthThreshold, _agentData));
+        healthKitSequence.AddChild(useCollectHealthKit);
+        useCollectHealthKit.AddChild(useHealthKit);
+        useCollectHealthKit.AddChild(collectHealthKit);
+
+        useHealthKit.AddChild(new HasItem(_agentInventory, Names.HealthKit));
+        useHealthKit.AddChild(new UseItem(this, _agentActions, _agentInventory, Names.HealthKit));
+
+        collectHealthKit.AddChild(new MoveToPosition(this, _agentActions, null, _agentData.PickUpRange, TargetTypes.HEALTHKIT));
+        collectHealthKit.AddChild(new CollectItem(this, _agentActions, _agentSenses, _agentInventory, TargetTypes.HEALTHKIT));
+        collectHealthKit.AddChild(new UseItem(this, _agentActions, _agentInventory, Names.HealthKit));
+
+        collectPowerUp.AddChild(new Inverter(new HasItem(_agentInventory, Names.PowerUp)));
+        collectPowerUp.AddChild(new MoveToPosition(this, _agentActions, null, _agentData.PickUpRange, TargetTypes.POWERUP));
+        collectPowerUp.AddChild(new CollectItem(this, _agentActions, _agentSenses, _agentInventory, TargetTypes.POWERUP));
+
+        collectUseItemSelector.AddChild(healthKitSequence);
+        collectUseItemSelector.AddChild(collectPowerUp);
 
         #region Attack Tree
-
-        
         Node hasEncounterEnemy = new HasEnconterEnemy(this, _agentSenses);
-        Node shouldFlee = new ShouldFlee(_agentData, _agentSenses);
-        Node flee = new Flee(_agentActions, _agentSenses);
+        Node shouldFlee = new ShouldFlee(this, _agentData, _agentSenses);
+        Node flee = new Flee(_agentActions, _agentSenses, new MoveToPosition(this, _agentActions, _friendlyBase, 2.5f), collectUseItemSelector);
         Node hasPowerUp = new HasItem(_agentInventory, Names.PowerUp);
-        Node usePowerUp = new UseItem(_agentActions, _agentInventory, Names.PowerUp);
-        Node getClose = new MoveToPosition(this, _agentActions, null, 2f, TargetTypes.ENEMY);
+        Node usePowerUp = new UseItem(this, _agentActions, _agentInventory, Names.PowerUp);
+        Node getClose = new MoveToPosition(this, _agentActions, null, _agentData.AttackRange, TargetTypes.ENEMY);
         Node attack = new Attack(this, _agentActions);
+        Node doIHaveBlueFlag = new Inverter(new HasItem(_agentInventory, Names.BlueFlag));
+        Node doIHaveRedFlag = new Inverter(new HasItem(_agentInventory, Names.RedFlag));
+        Node amITooCloseToEnemyFlag = new Inverter(new ComparePositions(this, null, 12f));
+
 
         Sequence fleeSequence = new Sequence(new List<Node> { shouldFlee, flee });
         Sequence attackSequence = new Sequence(new List<Node> { getClose, attack });
         Sequence attackWithPowerUpSequence = new Sequence(new List<Node> { hasPowerUp, usePowerUp, attackSequence });
         Selector mainSelector = new Selector(new List<Node> { fleeSequence, attackWithPowerUpSequence, attackSequence });
-        Sequence mainSequence = new Sequence(new List<Node> { hasEncounterEnemy, mainSelector });
+        Sequence mainSequence = new Sequence(new List<Node> { hasEncounterEnemy, doIHaveBlueFlag, doIHaveRedFlag, amITooCloseToEnemyFlag, mainSelector });
 
         _attackTree = mainSequence;
         #endregion
@@ -197,29 +202,50 @@ public class AI : MonoBehaviour
 
         dropFlag.AddChild(new MoveToPosition(this, _agentActions, _friendlyBase, 2f));
         dropFlag.AddChild(new ComparePositions(this, _friendlyBase, 2f));
-        dropFlag.AddChild(new DropItem(this, _agentActions, _agentInventory));
+        dropFlag.AddChild(new DropItem(this, _agentActions));
 
         Selector attackSelector = new Selector();
+        Sequence captureFlagSequence = new Sequence();
         attackSelector.AddChild(_attackTree);
-        attackSelector.AddChild(new MoveToPosition(this, _agentActions));
+        attackSelector.AddChild(captureFlagSequence);
 
         captureFlag.AddChild(new IsAnyFlagOutsideFriendlyBase(_friendlyBase, this, _agentData, _blackboard));
         captureFlag.AddChild(attackSelector);
-        captureFlag.AddChild(new ComparePositions(this));
-        captureFlag.AddChild(new CollectItem(this, _agentActions, _agentSenses, _agentInventory));
+        captureFlagSequence.AddChild(new MoveToPosition(this, _agentActions));
+        captureFlagSequence.AddChild(new ComparePositions(this));
+        captureFlagSequence.AddChild(new CollectItem(this, _agentActions, _agentSenses, _agentInventory));
+
+        Selector defendSelector = new Selector();
+        Sequence defendBaseSequence = new Sequence();
+        Selector defendBaseSelector = new Selector();
+        Sequence defendAllySequence = new Sequence();
+        Selector defendAllySelector = new Selector();
+
+        defendSelector.AddChild(defendBaseSequence);
+        defendBaseSequence.AddChild(new AreBothFlagsInFriendlyBase(_friendlyBase, this, _agentData, Blackboard));
+        defendBaseSequence.AddChild(defendBaseSelector);
+
+        defendBaseSelector.AddChild(_attackTree);
+        defendBaseSelector.AddChild(new MoveToPosition(this, _agentActions, _friendlyBase, 2f));
+
+        defendSelector.AddChild(defendAllySequence);
+        defendAllySequence.AddChild(new DoesAllyHaveFlag(this, _agentData));
+        defendAllySequence.AddChild(defendAllySelector);
+        defendAllySelector.AddChild(_attackTree);
+        defendAllySelector.AddChild(new MoveToPosition(this, _agentActions, null, 4f, TargetTypes.ALLY));
 
         root.AddChild(returnFlag);
         root.AddChild(captureFlag);
-
+        root.AddChild(collectUseItemSelector);
+        root.AddChild(defendSelector);
 
         _topNode = root;
     }
 
-    private void UpdateBlackboard()
+    public void UpdateBlackboard()
     {
-        _blackboard.ModifyData("HasEnemyFlag", _agentData.HasEnemyFlag);
-        _blackboard.ModifyData("HasFriendlyFlag", _agentData.HasFriendlyFlag);
+        _blackboard.ModifyData(Names.HealthKit, _agentSenses.GetNearestObjectInViewByName(Names.HealthKit));
 
-        _enemyFlagCarrier = (GameObject)_blackboard.GetData("EnemyFlagCarrier");
+        _blackboard.ModifyData(Names.PowerUp, _agentSenses.GetNearestObjectInViewByName(Names.PowerUp));
     }
 }

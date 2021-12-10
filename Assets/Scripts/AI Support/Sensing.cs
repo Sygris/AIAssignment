@@ -202,7 +202,7 @@ public class Sensing : MonoBehaviour
 
         List<GameObject> enemies = GetEnemiesInView();
 
-        if(enemies.Count > 0)
+        if (enemies.Count > 0)
         {
             GameObject closestEnemy = enemies.Aggregate((minItem, nextItem) => Vector3.Distance(minItem.transform.position, transform.position) < Vector3.Distance(nextItem.transform.position, transform.position) ? minItem : nextItem);
             return closestEnemy;
@@ -230,7 +230,35 @@ public class Sensing : MonoBehaviour
     public GameObject GetObjectInViewByName(string nameToSelect)
     {
         UpdateViewedObjectsList();
-        return _objectsInView.SingleOrDefault(x=>x.name.Equals(nameToSelect));
+
+        return _objectsInView.SingleOrDefault(x => x.name.Equals(nameToSelect));
+    }
+
+    /// <summary>
+    /// Returns the closest object with a specific name in view
+    /// </summary>
+    /// <param name="nameToSelect">The name of the object to return</param>
+    /// <returns>GameObject</returns>
+    public GameObject GetNearestObjectInViewByName(string nameToSelect)
+    {
+        UpdateViewedObjectsList();
+
+        List<GameObject> collectables = GetCollectablesInView();
+        List<GameObject> objectsOfType = new List<GameObject>();
+
+        foreach (var collectable in collectables)
+        {
+            if (collectable.name == nameToSelect && collectable.transform.parent == null)
+                objectsOfType.Add(collectable);
+        }
+
+        if(objectsOfType.Count > 0)
+        {
+            GameObject closestOfType = collectables.Aggregate((minItem, nextItem) => Vector3.Distance(minItem.transform.position, transform.position) < Vector3.Distance(nextItem.transform.position, transform.position) ? minItem : nextItem);
+            return closestOfType;
+        }
+
+        return null;
     }
 
     /// <summary>

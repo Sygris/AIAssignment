@@ -23,14 +23,16 @@ public class MoveToPosition : Node
     {
         SetState(NodeState.RUNNING);
 
-        GameObject tmp = Util.DetermineTarget(_agent, ref _target, _targetType);
+        GameObject tmp = Util.DetermineTarget(_agent, _target, _targetType);
+
+        if (tmp == null) return NodeState.FAILURE;
+
         _agentActions.MoveTo(tmp);
 
         if (Vector3.Distance(_agent.transform.position, tmp.transform.position) <= _tolerance)
         {
             SetState(NodeState.SUCCESS);
         }
-
 
         return _nodeState;
     }

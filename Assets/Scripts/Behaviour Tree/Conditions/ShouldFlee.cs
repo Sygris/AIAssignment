@@ -1,28 +1,25 @@
+using UnityEngine;
+
 public class ShouldFlee : Node
 {
+    private AI _agent;
     private AgentData _agentData;
     private Sensing _agentSenses;
 
-    public ShouldFlee(AgentData agentData, Sensing agentSenses)
+    public ShouldFlee(AI agent, AgentData agentData, Sensing agentSenses)
     {
+        _agent = agent;
         _agentData = agentData;
         _agentSenses = agentSenses;
     }
 
     public override NodeState Evaluate()
     {
-        if (_agentData.HasEnemyFlag || _agentData.HasFriendlyFlag)
-        {
-            return NodeState.SUCCESS;
-        }
-
-        if (_agentData.CurrentHitPoints <= _agentData.HealthThreshold)
-        {
-            return NodeState.SUCCESS;
-        }
-
-        // If there are more enemies than allies + AI
         if (_agentSenses.GetFriendliesInView().Count + 1 < _agentSenses.GetEnemiesInView().Count)
+        {
+            return NodeState.SUCCESS;
+        }
+        if (_agentData.CurrentHitPoints <= _agentData.HealthThreshold)
         {
             return NodeState.SUCCESS;
         }

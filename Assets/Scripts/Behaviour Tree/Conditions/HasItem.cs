@@ -16,12 +16,9 @@ public class HasItem : Node
     {
         if (_agentInventory.HasItem(_item))
         {
-            Debug.Log("Has " + _item);
-            SetState(NodeState.SUCCESS);
-            return _nodeState;
+            return NodeState.SUCCESS;
         }
 
-        SetState(NodeState.FAILURE);
-        return _nodeState;
+        return NodeState.FAILURE;
     }
 }

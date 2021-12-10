@@ -18,7 +18,7 @@ public class ComparePositions : Node
 
     public override NodeState Evaluate()
     {
-        GameObject tmp = Util.DetermineTarget(_agent, ref _target, TargetTypes.FLAG);
+        GameObject tmp = Util.DetermineTarget(_agent, _target, TargetTypes.FLAG);
 
         if (Vector3.Distance(_agent.transform.position, tmp.transform.position) > _tolerance)
         {

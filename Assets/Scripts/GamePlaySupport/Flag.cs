@@ -25,6 +25,8 @@ public class Flag : Collectable
 
         // not visible to AIs but AI's know it's being carried
         gameObject.layer = 0;
+
+        ToggleIsTaken();
     }
 
     /// <summary>
@@ -44,5 +46,7 @@ public class Flag : Collectable
 
         // Becomes visible to AIs and they know it's not carried
         gameObject.layer = LayerMask.NameToLayer("VisibleToAI");
+
+        ToggleIsTaken();
     }
 }

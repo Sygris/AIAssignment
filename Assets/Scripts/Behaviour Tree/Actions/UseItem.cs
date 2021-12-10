@@ -1,11 +1,13 @@
 public class UseItem : Node
 {
+    private AI _agent;
     private AgentActions _agentActions;
     private InventoryController _agentInventory;
     private string _itemToUse;
 
-    public UseItem(AgentActions agentActions, InventoryController agentInventory, string itemToUse)
+    public UseItem(AI agent, AgentActions agentActions, InventoryController agentInventory, string itemToUse)
     {
+        _agent = agent;
         _agentActions = agentActions;
         _agentInventory = agentInventory;
         _itemToUse = itemToUse;

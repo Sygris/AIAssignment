@@ -24,12 +24,13 @@ public class IsAnyFlagOutsideFriendlyBase : Node
         {
             // Checks if the friendly flag exists in the list and if so make it the priority flag
             // If not make the enemy flag the priority
-            if (_ai.PriorityFlag == null)
+            if (_ai.Blackboard.GetData("PriorityFlag") == null)
             {
                 if (_listOfFlagsOutsideBase.Contains((GameObject)_blackboard.GetData(_agentData.FriendlyFlagName)))
-                    _ai.PriorityFlag = (GameObject)_blackboard.GetData(_agentData.FriendlyFlagName);
+                    _ai.Blackboard.ModifyData("PriorityFlag", _blackboard.GetData(_agentData.FriendlyFlagName));
                 else
-                    _ai.PriorityFlag = (GameObject)_blackboard.GetData(_agentData.EnemyFlagName);
+                    _ai.Blackboard.ModifyData("PriorityFlag", (GameObject)_blackboard.GetData(_agentData.EnemyFlagName));
+                //_ai.Blackboard.GetData("PriorityFLag") = (GameObject)_blackboard.GetData(_agentData.EnemyFlagName);
             }
 
             return NodeState.SUCCESS;
