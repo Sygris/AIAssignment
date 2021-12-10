@@ -20,7 +20,7 @@ public class ComparePositions : Node
     {
         GameObject tmp = Util.DetermineTarget(_agent, _target, TargetTypes.FLAG);
 
-        if (Vector3.Distance(_agent.transform.position, tmp.transform.position) > _tolerance)
+        if (tmp != null && Vector3.Distance(_agent.transform.position, tmp.transform.position) > _tolerance)
         {
             SetState(NodeState.FAILURE);
             return _nodeState;

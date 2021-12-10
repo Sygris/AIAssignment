@@ -5,6 +5,8 @@ public class HasEnconterEnemy : Node
     private AI _agent;
     private Sensing _agentSenses;
 
+    private float _ignoreDistance = 15f;
+
     public HasEnconterEnemy(AI agent, Sensing agentSenses)
     {
         _agent = agent;
@@ -17,9 +19,13 @@ public class HasEnconterEnemy : Node
 
         GameObject flag = (GameObject)_agent.Blackboard.GetData("PriorityFlag");
 
-        if (Vector3.Distance(_agent.transform.position, flag.transform.position) <= 1f)
+        // If the flag is not null and the AI is close to the priority flag ignore the enemy
+        if (flag != null)
         {
-            return NodeState.FAILURE;
+            if (Vector3.Distance(_agent.transform.position, flag.transform.position) <= _ignoreDistance)
+            {
+                return NodeState.FAILURE;
+            }
         }
 
         return _agentSenses.GetEnemiesInView().Count > 0 ? NodeState.SUCCESS : NodeState.FAILURE;

@@ -42,7 +42,6 @@ public class AreBothFlagsInFriendlyBase : Node
             }
         }
 
-        Debug.Log(_listOfFlagsInsideOfBase.Count == numOfFlags);
         return _listOfFlagsInsideOfBase.Count == numOfFlags;
     }
 }

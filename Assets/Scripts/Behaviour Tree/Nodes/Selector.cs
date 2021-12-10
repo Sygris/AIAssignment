@@ -43,7 +43,7 @@ public class Selector : Node
             }
         }
 
-        _nodeState = NodeState.RUNNING;
+        _nodeState = NodeState.FAILURE;
         return _nodeState;
     }
 }

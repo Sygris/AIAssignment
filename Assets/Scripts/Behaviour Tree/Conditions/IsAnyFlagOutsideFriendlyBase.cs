@@ -32,7 +32,6 @@ public class IsAnyFlagOutsideFriendlyBase : Node
                     _ai.Blackboard.ModifyData("PriorityFlag", (GameObject)_blackboard.GetData(_agentData.EnemyFlagName));
                 //_ai.Blackboard.GetData("PriorityFLag") = (GameObject)_blackboard.GetData(_agentData.EnemyFlagName);
             }
-
             return NodeState.SUCCESS;
         }
 
